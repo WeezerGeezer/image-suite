@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let canvasSize = { width: 600, height: 600 };
     let innerFrameSize = { width: 600, height: 600 };
+    let innerFramePosition = { x: 0, y: 0 }; // Position of inner frame relative to outer frame
 
     // Event Listeners - Setup Section
     presetSize.addEventListener('change', (e) => {
@@ -182,6 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         innerFrameSize.width = config.imageWidth * scaleFactorX;
         innerFrameSize.height = config.imageHeight * scaleFactorY;
+
+        // Default: center the inner frame
+        innerFramePosition.x = (canvasSize.width - innerFrameSize.width) / 2;
+        innerFramePosition.y = (canvasSize.height - innerFrameSize.height) / 2;
     }
 
     function drawEditor() {
@@ -197,11 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.save();
 
         // Clip to inner frame
-        const innerX = (canvasSize.width - innerFrameSize.width) / 2;
-        const innerY = (canvasSize.height - innerFrameSize.height) / 2;
-
         ctx.beginPath();
-        ctx.rect(innerX, innerY, innerFrameSize.width, innerFrameSize.height);
+        ctx.rect(innerFramePosition.x, innerFramePosition.y, innerFrameSize.width, innerFrameSize.height);
         ctx.clip();
 
         // Draw the image with current position and scale
@@ -221,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Draw inner frame border (green box - image area)
         ctx.strokeStyle = '#2ecc71';
         ctx.lineWidth = 3;
-        ctx.strokeRect(innerX, innerY, innerFrameSize.width, innerFrameSize.height);
+        ctx.strokeRect(innerFramePosition.x, innerFramePosition.y, innerFrameSize.width, innerFrameSize.height);
 
         // Draw outer border (blue - print boundary)
         ctx.strokeStyle = '#3498db';
@@ -252,9 +254,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const scaleFactorX = printWidthPx / canvasSize.width;
         const scaleFactorY = printHeightPx / canvasSize.height;
 
-        // Calculate inner frame position in output canvas
-        const innerOutputX = (printWidthPx - imageWidthPx) / 2;
-        const innerOutputY = (printHeightPx - imageHeightPx) / 2;
+        // Calculate inner frame position in output canvas (scale the position)
+        const innerOutputX = innerFramePosition.x * scaleFactorX;
+        const innerOutputY = innerFramePosition.y * scaleFactorY;
 
         // Save context and clip to inner frame
         ctx.save();
@@ -285,7 +287,15 @@ document.addEventListener('DOMContentLoaded', () => {
         scaleSlider.value = Math.round(scale * 100);
         scaleValue.textContent = Math.round(scale * 100) + '%';
 
-        centerImage();
+        // Center image within inner frame (at its current position)
+        const drawWidth = originalImage.width * imageState.scale;
+        const drawHeight = originalImage.height * imageState.scale;
+
+        imageState.x = innerFramePosition.x + (innerFrameSize.width - drawWidth) / 2;
+        imageState.y = innerFramePosition.y + (innerFrameSize.height - drawHeight) / 2;
+
+        drawEditor();
+        updatePreview();
     }
 
     function fillCanvas() {
@@ -300,7 +310,15 @@ document.addEventListener('DOMContentLoaded', () => {
         scaleSlider.value = Math.round(scale * 100);
         scaleValue.textContent = Math.round(scale * 100) + '%';
 
-        centerImage();
+        // Center image within inner frame (at its current position)
+        const drawWidth = originalImage.width * imageState.scale;
+        const drawHeight = originalImage.height * imageState.scale;
+
+        imageState.x = innerFramePosition.x + (innerFrameSize.width - drawWidth) / 2;
+        imageState.y = innerFramePosition.y + (innerFrameSize.height - drawHeight) / 2;
+
+        drawEditor();
+        updatePreview();
     }
 
     function centerImage() {
@@ -309,12 +327,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const drawWidth = originalImage.width * imageState.scale;
         const drawHeight = originalImage.height * imageState.scale;
 
-        // Center within the inner frame
-        const innerX = (canvasSize.width - innerFrameSize.width) / 2;
-        const innerY = (canvasSize.height - innerFrameSize.height) / 2;
+        // Center the inner frame within the outer frame
+        innerFramePosition.x = (canvasSize.width - innerFrameSize.width) / 2;
+        innerFramePosition.y = (canvasSize.height - innerFrameSize.height) / 2;
 
-        imageState.x = innerX + (innerFrameSize.width - drawWidth) / 2;
-        imageState.y = innerY + (innerFrameSize.height - drawHeight) / 2;
+        // Center the image within the inner frame
+        imageState.x = innerFramePosition.x + (innerFrameSize.width - drawWidth) / 2;
+        imageState.y = innerFramePosition.y + (innerFrameSize.height - drawHeight) / 2;
 
         drawEditor();
         updatePreview();
@@ -323,15 +342,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function topLeftImage() {
         if (!originalImage) return;
 
-        // Position at top-left corner of inner frame
-        const innerX = (canvasSize.width - innerFrameSize.width) / 2;
-        const innerY = (canvasSize.height - innerFrameSize.height) / 2;
+        // Position inner frame at top-left corner of outer frame
+        innerFramePosition.x = 0;
+        innerFramePosition.y = 0;
 
-        imageState.x = innerX;
-        imageState.y = innerY;
-
-        drawEditor();
-        updatePreview();
+        // Fit and center image within the (now top-left positioned) inner frame
+        fitToCanvas();
     }
 
     function resetImage() {
