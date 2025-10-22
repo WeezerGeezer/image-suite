@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fitBtn = document.getElementById('fitBtn');
     const fillBtn = document.getElementById('fillBtn');
     const centerBtn = document.getElementById('centerBtn');
+    const topLeftBtn = document.getElementById('topLeftBtn');
     const resetBtn = document.getElementById('resetBtn');
 
     // State
@@ -147,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fitBtn.addEventListener('click', fitToCanvas);
         fillBtn.addEventListener('click', fillCanvas);
         centerBtn.addEventListener('click', centerImage);
+        topLeftBtn.addEventListener('click', topLeftImage);
         resetBtn.addEventListener('click', resetImage);
 
         editorCanvas.addEventListener('mousedown', handleMouseDown);
@@ -313,6 +315,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         imageState.x = innerX + (innerFrameSize.width - drawWidth) / 2;
         imageState.y = innerY + (innerFrameSize.height - drawHeight) / 2;
+
+        drawEditor();
+        updatePreview();
+    }
+
+    function topLeftImage() {
+        if (!originalImage) return;
+
+        // Position at top-left corner of inner frame
+        const innerX = (canvasSize.width - innerFrameSize.width) / 2;
+        const innerY = (canvasSize.height - innerFrameSize.height) / 2;
+
+        imageState.x = innerX;
+        imageState.y = innerY;
 
         drawEditor();
         updatePreview();

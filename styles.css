@@ -184,6 +184,10 @@ input[type="range"] {
     gap: 0.5rem;
 }
 
+.button-group button:nth-child(5) {
+    grid-column: 1 / -1;
+}
+
 .control-btn {
     padding: 0.7rem;
     background-color: #ecf0f1;
