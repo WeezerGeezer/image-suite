@@ -18,7 +18,7 @@
 
             <div class="controls-section">
                 <div class="control-group">
-                    <label for="presetSize">Output Size:</label>
+                    <label for="presetSize">Print Size (Outer Frame):</label>
                     <select id="presetSize">
                         <option value="4x6">4x6 inches</option>
                         <option value="4x4">4x4 inches (square)</option>
@@ -33,12 +33,38 @@
 
                 <div class="custom-size-inputs" id="customSizeInputs" style="display: none;">
                     <div class="control-group">
-                        <label for="targetWidth">Width (inches):</label>
+                        <label for="targetWidth">Print Width (inches):</label>
                         <input type="number" id="targetWidth" value="4" step="0.1" min="0.1">
                     </div>
                     <div class="control-group">
-                        <label for="targetHeight">Height (inches):</label>
+                        <label for="targetHeight">Print Height (inches):</label>
                         <input type="number" id="targetHeight" value="6" step="0.1" min="0.1">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="innerPreset">Image Size (Inner Frame):</label>
+                    <select id="innerPreset">
+                        <option value="same">Same as Print Size</option>
+                        <option value="4x6">4x6 inches</option>
+                        <option value="4x4">4x4 inches (square)</option>
+                        <option value="5x7">5x7 inches</option>
+                        <option value="3x3">3x3 inches (square)</option>
+                        <option value="3x5">3x5 inches</option>
+                        <option value="8x10">8x10 inches</option>
+                        <option value="6x6">6x6 inches (square)</option>
+                        <option value="custom">Custom Size</option>
+                    </select>
+                </div>
+
+                <div class="custom-size-inputs" id="customInnerInputs" style="display: none;">
+                    <div class="control-group">
+                        <label for="innerWidth">Image Width (inches):</label>
+                        <input type="number" id="innerWidth" value="4" step="0.1" min="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label for="innerHeight">Image Height (inches):</label>
+                        <input type="number" id="innerHeight" value="4" step="0.1" min="0.1">
                     </div>
                 </div>
 
@@ -56,7 +82,7 @@
         <div class="editor-section" id="editorSection" style="display: none;">
             <div class="editor-header">
                 <h2>Position Your Image</h2>
-                <p>Drag to move • Scroll to zoom • White areas will be added as borders</p>
+                <p>Drag to move • Scroll to zoom • Green box = image area • White areas = borders</p>
             </div>
 
             <div class="editor-workspace">

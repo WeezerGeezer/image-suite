@@ -5,10 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadBtn = document.getElementById('downloadBtn');
     const targetWidthInput = document.getElementById('targetWidth');
     const targetHeightInput = document.getElementById('targetHeight');
+    const innerWidthInput = document.getElementById('innerWidth');
+    const innerHeightInput = document.getElementById('innerHeight');
     const dpiInput = document.getElementById('dpi');
     const presetSize = document.getElementById('presetSize');
+    const innerPreset = document.getElementById('innerPreset');
     const editorSection = document.getElementById('editorSection');
     const customSizeInputs = document.getElementById('customSizeInputs');
+    const customInnerInputs = document.getElementById('customInnerInputs');
     const scaleSlider = document.getElementById('scaleSlider');
     const scaleValue = document.getElementById('scaleValue');
     const fitBtn = document.getElementById('fitBtn');
@@ -31,10 +35,15 @@ document.addEventListener('DOMContentLoaded', () => {
         height: 600
     };
 
+    let innerFrameSize = {
+        width: 600,
+        height: 600
+    };
+
     imageInput.addEventListener('change', handleImageUpload);
     downloadBtn.addEventListener('click', downloadImage);
 
-    // Preset size selector
+    // Preset size selector (outer frame)
     presetSize.addEventListener('change', (e) => {
         const preset = e.target.value;
         if (preset === 'custom') {
@@ -52,8 +61,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Inner frame preset selector
+    innerPreset.addEventListener('change', (e) => {
+        const preset = e.target.value;
+        if (preset === 'custom') {
+            customInnerInputs.style.display = 'flex';
+        } else {
+            customInnerInputs.style.display = 'none';
+            if (preset !== 'same') {
+                const [width, height] = preset.split('x').map(Number);
+                innerWidthInput.value = width;
+                innerHeightInput.value = height;
+            }
+        }
+        if (originalImage) {
+            updateCanvasSize();
+            drawEditor();
+            updatePreview();
+        }
+    });
+
     // Custom size inputs
-    [targetWidthInput, targetHeightInput, dpiInput].forEach(input => {
+    [targetWidthInput, targetHeightInput, innerWidthInput, innerHeightInput, dpiInput].forEach(input => {
         input.addEventListener('input', () => {
             if (originalImage) {
                 updateCanvasSize();
@@ -109,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetHeight = parseFloat(targetHeightInput.value) || 6;
         const aspectRatio = targetWidth / targetHeight;
 
-        // Set editor canvas to a reasonable display size
+        // Set editor canvas to a reasonable display size (outer frame)
         const maxSize = 600;
         if (aspectRatio > 1) {
             canvasSize.width = maxSize;
@@ -121,6 +150,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         editorCanvas.width = canvasSize.width;
         editorCanvas.height = canvasSize.height;
+
+        // Calculate inner frame size
+        const innerPresetValue = innerPreset.value;
+        let innerWidth, innerHeight;
+
+        if (innerPresetValue === 'same') {
+            innerWidth = targetWidth;
+            innerHeight = targetHeight;
+        } else {
+            innerWidth = parseFloat(innerWidthInput.value) || targetWidth;
+            innerHeight = parseFloat(innerHeightInput.value) || targetHeight;
+        }
+
+        // Convert inner frame to canvas pixels
+        const scaleFactorX = canvasSize.width / targetWidth;
+        const scaleFactorY = canvasSize.height / targetHeight;
+
+        innerFrameSize.width = innerWidth * scaleFactorX;
+        innerFrameSize.height = innerHeight * scaleFactorY;
     }
 
     function drawEditor() {
@@ -144,7 +192,15 @@ document.addEventListener('DOMContentLoaded', () => {
             drawHeight
         );
 
-        // Draw border around canvas
+        // Draw inner frame (green box - where the image will be cropped)
+        const innerX = (canvasSize.width - innerFrameSize.width) / 2;
+        const innerY = (canvasSize.height - innerFrameSize.height) / 2;
+
+        ctx.strokeStyle = '#2ecc71';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(innerX, innerY, innerFrameSize.width, innerFrameSize.height);
+
+        // Draw outer border around canvas (blue - print boundary)
         ctx.strokeStyle = '#3498db';
         ctx.lineWidth = 2;
         ctx.strokeRect(0, 0, canvasSize.width, canvasSize.height);
@@ -157,9 +213,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetHeight = parseFloat(targetHeightInput.value) || 6;
         const dpi = parseInt(dpiInput.value) || 300;
 
+        // Get inner frame dimensions
+        const innerPresetValue = innerPreset.value;
+        let innerWidth, innerHeight;
+
+        if (innerPresetValue === 'same') {
+            innerWidth = targetWidth;
+            innerHeight = targetHeight;
+        } else {
+            innerWidth = parseFloat(innerWidthInput.value) || targetWidth;
+            innerHeight = parseFloat(innerHeightInput.value) || targetHeight;
+        }
+
         // Convert inches to pixels for final output
         const targetWidthPx = Math.round(targetWidth * dpi);
         const targetHeightPx = Math.round(targetHeight * dpi);
+        const innerWidthPx = Math.round(innerWidth * dpi);
+        const innerHeightPx = Math.round(innerHeight * dpi);
 
         // Set preview canvas size
         previewCanvas.width = targetWidthPx;
@@ -175,21 +245,38 @@ document.addEventListener('DOMContentLoaded', () => {
         const scaleFactorX = targetWidthPx / canvasSize.width;
         const scaleFactorY = targetHeightPx / canvasSize.height;
 
+        // Calculate inner frame position in editor canvas
+        const innerEditorX = (canvasSize.width - innerFrameSize.width) / 2;
+        const innerEditorY = (canvasSize.height - innerFrameSize.height) / 2;
+
+        // Calculate inner frame position in output canvas
+        const innerOutputX = (targetWidthPx - innerWidthPx) / 2;
+        const innerOutputY = (targetHeightPx - innerHeightPx) / 2;
+
+        // Save context and clip to inner frame
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(innerOutputX, innerOutputY, innerWidthPx, innerHeightPx);
+        ctx.clip();
+
         // Draw the image at the same relative position and scale
+        // Adjust position to account for inner frame offset
         const drawWidth = originalImage.width * imageState.scale * scaleFactorX;
         const drawHeight = originalImage.height * imageState.scale * scaleFactorY;
         const x = imageState.x * scaleFactorX;
         const y = imageState.y * scaleFactorY;
 
         ctx.drawImage(originalImage, x, y, drawWidth, drawHeight);
+
+        ctx.restore();
     }
 
     function fitToCanvas() {
         if (!originalImage) return;
 
-        // Scale image to fit entirely within canvas
-        const scaleX = canvasSize.width / originalImage.width;
-        const scaleY = canvasSize.height / originalImage.height;
+        // Scale image to fit entirely within inner frame
+        const scaleX = innerFrameSize.width / originalImage.width;
+        const scaleY = innerFrameSize.height / originalImage.height;
         const scale = Math.min(scaleX, scaleY);
 
         imageState.scale = scale;
@@ -202,9 +289,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function fillCanvas() {
         if (!originalImage) return;
 
-        // Scale image to fill entire canvas (may crop)
-        const scaleX = canvasSize.width / originalImage.width;
-        const scaleY = canvasSize.height / originalImage.height;
+        // Scale image to fill entire inner frame (may crop)
+        const scaleX = innerFrameSize.width / originalImage.width;
+        const scaleY = innerFrameSize.height / originalImage.height;
         const scale = Math.max(scaleX, scaleY);
 
         imageState.scale = scale;
@@ -220,8 +307,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const drawWidth = originalImage.width * imageState.scale;
         const drawHeight = originalImage.height * imageState.scale;
 
-        imageState.x = (canvasSize.width - drawWidth) / 2;
-        imageState.y = (canvasSize.height - drawHeight) / 2;
+        // Center within the inner frame
+        const innerX = (canvasSize.width - innerFrameSize.width) / 2;
+        const innerY = (canvasSize.height - innerFrameSize.height) / 2;
+
+        imageState.x = innerX + (innerFrameSize.width - drawWidth) / 2;
+        imageState.y = innerY + (innerFrameSize.height - drawHeight) / 2;
 
         drawEditor();
         updatePreview();
