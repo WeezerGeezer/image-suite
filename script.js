@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const editorCanvas = document.getElementById('editorCanvas');
     const previewCanvas = document.getElementById('previewCanvas');
     const downloadBtn = document.getElementById('downloadBtn');
+    const cropAnotherBtn = document.getElementById('cropAnotherBtn');
     const continueBtn = document.getElementById('continueBtn');
     const backBtn = document.getElementById('backBtn');
 
@@ -129,6 +130,26 @@ document.addEventListener('DOMContentLoaded', () => {
     backBtn.addEventListener('click', () => {
         uploadSection.style.display = 'none';
         setupSection.style.display = 'block';
+    });
+
+    cropAnotherBtn.addEventListener('click', () => {
+        // Reset image input
+        imageInput.value = '';
+        originalImage = null;
+
+        // Reset image state
+        imageState = {
+            x: 0,
+            y: 0,
+            scale: 1,
+            isDragging: false,
+            dragStartX: 0,
+            dragStartY: 0
+        };
+
+        // Go back to upload section
+        editorSection.style.display = 'none';
+        uploadSection.style.display = 'block';
     });
 
     // Event Listeners - Image Upload
