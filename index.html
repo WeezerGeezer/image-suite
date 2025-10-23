@@ -13,6 +13,18 @@
         <div class="setup-section" id="setupSection">
             <h2>Step 1: Configure Output Size</h2>
 
+            <div class="quick-presets">
+                <h3>Quick Presets:</h3>
+                <div class="preset-buttons">
+                    <button class="preset-btn" data-print="4x6" data-image="4x4">4x4 in 4x6</button>
+                    <button class="preset-btn" data-print="5x7" data-image="5x5">5x5 in 5x7</button>
+                    <button class="preset-btn" data-print="8x10" data-image="5x7">5x7 in 8x10</button>
+                    <button class="preset-btn" data-print="8x10" data-image="8x8">8x8 in 8x10</button>
+                </div>
+            </div>
+
+            <div class="divider">or configure manually:</div>
+
             <div class="controls-section">
                 <div class="control-group">
                     <label for="presetSize">Print Size (Outer Frame):</label>
@@ -80,10 +92,21 @@
 
         <div class="upload-section" id="uploadSection" style="display: none;">
             <h2>Step 2: Choose Your Image</h2>
-            <label for="imageInput" class="upload-button">
-                Choose Image
-                <input type="file" id="imageInput" accept="image/*">
-            </label>
+            <div id="dropZone" class="drop-zone">
+                <div class="drop-zone-content">
+                    <svg class="upload-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p class="drop-zone-text">Drag and drop your image here</p>
+                    <p class="drop-zone-or">or</p>
+                    <label for="imageInput" class="upload-button">
+                        Choose Image
+                        <input type="file" id="imageInput" accept="image/*">
+                    </label>
+                </div>
+            </div>
             <button id="backBtn" class="back-btn">← Back to Settings</button>
         </div>
 

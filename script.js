@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const editorSection = document.getElementById('editorSection');
 
     const imageInput = document.getElementById('imageInput');
+    const dropZone = document.getElementById('dropZone');
+    const presetButtons = document.querySelectorAll('.preset-btn');
     const editorCanvas = document.getElementById('editorCanvas');
     const previewCanvas = document.getElementById('previewCanvas');
     const downloadBtn = document.getElementById('downloadBtn');
@@ -52,6 +54,30 @@ document.addEventListener('DOMContentLoaded', () => {
     let canvasSize = { width: 600, height: 600 };
     let innerFrameSize = { width: 600, height: 600 };
     let innerFramePosition = { x: 0, y: 0 }; // Position of inner frame relative to outer frame
+
+    // Event Listeners - Quick Presets
+    presetButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const printSize = btn.dataset.print;
+            const imageSize = btn.dataset.image;
+
+            // Set print size
+            presetSize.value = printSize;
+            const [printW, printH] = printSize.split('x').map(Number);
+            targetWidthInput.value = printW;
+            targetHeightInput.value = printH;
+
+            // Set image size
+            innerPreset.value = imageSize;
+            const [imageW, imageH] = imageSize.split('x').map(Number);
+            innerWidthInput.value = imageW;
+            innerHeightInput.value = imageH;
+
+            // Visual feedback
+            btn.classList.add('preset-active');
+            setTimeout(() => btn.classList.remove('preset-active'), 300);
+        });
+    });
 
     // Event Listeners - Setup Section
     presetSize.addEventListener('change', (e) => {
@@ -108,10 +134,44 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event Listeners - Image Upload
     imageInput.addEventListener('change', handleImageUpload);
 
+    // Drag and Drop functionality
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drop-zone-active');
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drop-zone-active');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drop-zone-active');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type.startsWith('image/')) {
+                handleImageFile(file);
+            }
+        }
+    });
+
+    // Click on drop zone to trigger file input
+    dropZone.addEventListener('click', (e) => {
+        if (e.target !== imageInput && !e.target.closest('label')) {
+            imageInput.click();
+        }
+    });
+
     function handleImageUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
+        handleImageFile(file);
+    }
 
+    function handleImageFile(file) {
         const reader = new FileReader();
         reader.onload = (event) => {
             const img = new Image();
