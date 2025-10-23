@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const customInnerInputs = document.getElementById('customInnerInputs');
 
     const scaleSlider = document.getElementById('scaleSlider');
-    const scaleValue = document.getElementById('scaleValue');
+    const scaleInput = document.getElementById('scaleInput');
+    const scaleError = document.getElementById('scaleError');
     const fitBtn = document.getElementById('fitBtn');
     const fillBtn = document.getElementById('fillBtn');
     const centerBtn = document.getElementById('centerBtn');
@@ -140,10 +141,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupEditorEvents() {
         scaleSlider.addEventListener('input', (e) => {
-            imageState.scale = e.target.value / 100;
-            scaleValue.textContent = e.target.value + '%';
+            const value = e.target.value;
+            scaleInput.value = value;
+            imageState.scale = value / 100;
+            scaleError.style.display = 'none';
             drawEditor();
             updatePreview();
+        });
+
+        scaleInput.addEventListener('input', (e) => {
+            let value = e.target.value.trim();
+
+            // Remove any non-numeric characters except decimal point
+            value = value.replace(/[^\d.]/g, '');
+
+            // Parse as number
+            const numValue = parseFloat(value);
+
+            // Validate
+            if (isNaN(numValue) || numValue < 10 || numValue > 200) {
+                scaleError.style.display = 'block';
+                return;
+            }
+
+            scaleError.style.display = 'none';
+
+            // Update slider and image
+            scaleSlider.value = Math.round(numValue);
+            imageState.scale = numValue / 100;
+            drawEditor();
+            updatePreview();
+        });
+
+        scaleInput.addEventListener('blur', (e) => {
+            let value = e.target.value.trim();
+            value = value.replace(/[^\d.]/g, '');
+            const numValue = parseFloat(value);
+
+            // On blur, if invalid, reset to current scale
+            if (isNaN(numValue) || numValue < 10 || numValue > 200) {
+                scaleInput.value = Math.round(imageState.scale * 100);
+                scaleError.style.display = 'none';
+            } else {
+                // Round to whole number
+                scaleInput.value = Math.round(numValue);
+            }
         });
 
         fitBtn.addEventListener('click', fitToCanvas);
@@ -284,8 +326,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const scale = Math.min(scaleX, scaleY);
 
         imageState.scale = scale;
-        scaleSlider.value = Math.round(scale * 100);
-        scaleValue.textContent = Math.round(scale * 100) + '%';
+        const scalePercent = Math.round(scale * 100);
+        scaleSlider.value = scalePercent;
+        scaleInput.value = scalePercent;
 
         // Center image within inner frame (at its current position)
         const drawWidth = originalImage.width * imageState.scale;
@@ -307,8 +350,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const scale = Math.max(scaleX, scaleY);
 
         imageState.scale = scale;
-        scaleSlider.value = Math.round(scale * 100);
-        scaleValue.textContent = Math.round(scale * 100) + '%';
+        const scalePercent = Math.round(scale * 100);
+        scaleSlider.value = scalePercent;
+        scaleInput.value = scalePercent;
 
         // Center image within inner frame (at its current position)
         const drawWidth = originalImage.width * imageState.scale;
@@ -357,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
         imageState.x = 0;
         imageState.y = 0;
         scaleSlider.value = 100;
-        scaleValue.textContent = '100%';
+        scaleInput.value = 100;
 
         fitToCanvas();
     }
@@ -397,8 +441,8 @@ document.addEventListener('DOMContentLoaded', () => {
         newScale = Math.max(10, Math.min(200, newScale));
 
         scaleSlider.value = newScale;
+        scaleInput.value = newScale;
         imageState.scale = newScale / 100;
-        scaleValue.textContent = newScale + '%';
 
         drawEditor();
         updatePreview();

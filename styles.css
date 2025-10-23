@@ -174,8 +174,46 @@ input[type="file"] {
 }
 
 input[type="range"] {
-    width: 100%;
+    flex: 1;
     cursor: pointer;
+}
+
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.zoom-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 70px;
+}
+
+.zoom-input {
+    width: 50px;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    text-align: right;
+}
+
+.zoom-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.zoom-unit {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
 }
 
 .button-group {
