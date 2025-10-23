@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const numValue = parseFloat(value);
 
             // Validate
-            if (isNaN(numValue) || numValue < 10 || numValue > 200) {
+            if (isNaN(numValue) || numValue < 1 || numValue > 200) {
                 scaleError.style.display = 'block';
                 return;
             }
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const numValue = parseFloat(value);
 
             // On blur, if invalid, reset to current scale
-            if (isNaN(numValue) || numValue < 10 || numValue > 200) {
+            if (isNaN(numValue) || numValue < 1 || numValue > 200) {
                 scaleInput.value = Math.round(imageState.scale * 100);
                 scaleError.style.display = 'none';
             } else {
@@ -438,7 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const delta = e.deltaY > 0 ? -5 : 5;
         let newScale = parseInt(scaleSlider.value) + delta;
-        newScale = Math.max(10, Math.min(200, newScale));
+        newScale = Math.max(1, Math.min(200, newScale));
 
         scaleSlider.value = newScale;
         scaleInput.value = newScale;
